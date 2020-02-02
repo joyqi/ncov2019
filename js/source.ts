@@ -19,14 +19,14 @@ async function fetchCnData() {
     let resp = await fetchJsonp("https://interface.sina.cn/news/wap/fymap2020_data.d.json"),
         json = await resp.json();
 
-    return json.data.historylist.reverse().slice(10);
+    return json.data.historylist.reverse().slice(9);
 }
 
 async function fetchHbData() {
     let resp = await fetchJsonp("https://interface.sina.cn/news/wap/historydata.d.json?province=hubei"),
         json = await resp.json();
 
-    return json.data.historylist.reverse().slice(10);
+    return json.data.historylist.reverse().slice(9);
 }
 
 enum CountType {
@@ -53,9 +53,10 @@ async function draw() {
             datasets: [datasets]
         };
 
-        let lastCn = 0, lastHb = 0;
+        let lastCn = cnData[0]['cn_' + type + 'Num'],
+            lastHb = hbData[0][type + 'Num'];
 
-        for (let i = 0; i < cnData.length; i ++) {
+        for (let i = 1; i < cnData.length; i ++) {
             let currCn = cnData[i]['cn_' + type + 'Num'],
                 currHb = hbData[i][type + 'Num'],
                 currCnAdd = currCn - lastCn,
