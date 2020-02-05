@@ -67,29 +67,55 @@ async function draw() {
             fill: false
         },
         datasetsC: ChartDataSets = {
-            label: "当前在院治疗",
+            label: "当前湖北在院治疗",
             data: [],
             fill: false
         },
-        data: ChartData = {
+        datasetsD: ChartDataSets = {
+            label: "当前除湖北在院治疗",
+            data: [],
+            fill: false
+        },
+        dataA: ChartData = {
             labels: [],
-            datasets: [datasetsA, datasetsB, datasetsC]
+            datasets: [datasetsA, datasetsB]
+        },
+        dataB: ChartData = {
+            labels: [],
+            datasets: [datasetsC, datasetsD]
         };
 
-        fixedData.forEach((value: any) => {
-            data.labels?.push(value.date);
+        fixedData.forEach((value: any, i: number) => {
+            let treating = value.confirm - value.heal - value.dead,
+                treatingHb = hbData[i].conNum - hbData[i].cureNum - hbData[i].deathNum;
+
+            dataA.labels?.push(value.date);
+            dataB.labels?.push(value.date);
             datasetsA.data?.push(value.suspect_added);
             datasetsB.data?.push(value.suspect);
-            datasetsC.data?.push(value.confirm - value.heal - value.dead);
+            datasetsC.data?.push(treatingHb);
+            datasetsD.data?.push(treating - treatingHb);
         });
 
         new Chart(createCanvas('#main'), {
             type: "line",
-            data: data,
+            data: dataA,
             options: {
                 plugins: {
                     colorschemes: {
                         scheme: 'brewer.SetOne3'
+                    }
+                }
+            }
+        });
+
+        new Chart(createCanvas('#main'), {
+            type: "line",
+            data: dataB,
+            options: {
+                plugins: {
+                    colorschemes: {
+                        scheme: 'brewer.DarkTwo3'
                     }
                 }
             }
