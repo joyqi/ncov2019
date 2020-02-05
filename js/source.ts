@@ -30,7 +30,7 @@ async function fetchData(url: string) {
 }
 
 async function fetchFixedData() {
-    let resp = await fetchJsonp("http://www.whateverorigin.org/get?url="
+    let resp = await fetchJsonp("https://joyqi.com/proxy.php?url="
         + encodeURIComponent("https://news.163.com/special/epidemic/")),
         data = await resp.json(),
         matches = data.contents.match(/window\.data_by_date\s*=\s*([^;]+);/),
@@ -66,15 +66,21 @@ async function draw() {
             data: [],
             fill: false
         },
+        datasetsC: ChartDataSets = {
+            label: "当前在院治疗",
+            data: [],
+            fill: false
+        },
         data: ChartData = {
             labels: [],
-            datasets: [datasetsA, datasetsB]
+            datasets: [datasetsA, datasetsB, datasetsC]
         };
 
         fixedData.forEach((value: any) => {
             data.labels?.push(value.date);
             datasetsA.data?.push(value.suspect_added);
             datasetsB.data?.push(value.suspect);
+            datasetsC.data?.push(value.confirm - value.heal - value.dead);
         });
 
         new Chart(createCanvas('#main'), {
