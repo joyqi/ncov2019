@@ -268,7 +268,6 @@ async function draw() {
     function drawConfirmed() {
         let data = generateData();
 
-        data.datasets?.push(generateDatasets('con', '全国新增确诊', CountType.CnAdd));
         data.datasets?.push(generateDatasets('con', '湖北新增确诊', CountType.HbAdd));
         data.datasets?.push(generateDatasets('con', '除湖北新增确诊', CountType.Sub));
 
