@@ -29,6 +29,17 @@ async function fetchData(url: string) {
     return await resp.json();
 }
 
+async function fetchFixedData() {
+    let resp = await fetchJsonp("http://www.whateverorigin.org/get?url="
+        + encodeURIComponent("https://news.163.com/special/epidemic/")),
+        data = await resp.json(),
+        matches = data.contents.match(/window\.data_by_date\s*=\s*([^;]+);/),
+        result: never[] = [];
+
+    eval("result = " + matches[1]);
+    return result;
+}
+
 enum CountType {
     Sub = 1,
     CnAdd = 2,
@@ -41,7 +52,43 @@ async function draw() {
     let mapData = await fetchData("fymap2020_data.d.json"),
         hbHistoryData = await fetchData("historydata.d.json?province=hubei"),
         cnData = mapData.data.historylist.slice(0).reverse().slice(9),
-        hbData = hbHistoryData.data.historylist.slice(0).reverse().slice(9);
+        hbData = hbHistoryData.data.historylist.slice(0).reverse().slice(9),
+        fixedData = (await fetchFixedData()).slice(1);
+
+    function drawFixed() {
+        let datasetsA: ChartDataSets = {
+            label: "新增疑似病例",
+            data: [],
+            fill: false
+        },
+        datasetsB: ChartDataSets = {
+            label: "现存疑似病例",
+            data: [],
+            fill: false
+        },
+        data: ChartData = {
+            labels: [],
+            datasets: [datasetsA, datasetsB]
+        };
+
+        fixedData.forEach((value: any) => {
+            data.labels?.push(value.date);
+            datasetsA.data?.push(value.suspect_added);
+            datasetsB.data?.push(value.suspect);
+        });
+
+        new Chart(createCanvas('#main'), {
+            type: "line",
+            data: data,
+            options: {
+                plugins: {
+                    colorschemes: {
+                        scheme: 'brewer.SetOne3'
+                    }
+                }
+            }
+        });
+    }
 
     function drawMap() {
         let i = 0, finished = 0, percent = 0,
@@ -128,14 +175,24 @@ async function draw() {
         });
     }
 
-    function drawData(type: string, title: string, countType: CountType) {
+    function generateData() {
+        let data: ChartData = {
+            labels: [],
+            datasets: []
+        };
+
+        cnData.slice(1).forEach((value: any) => {
+            data.labels?.push(value.date);
+        });
+
+        return data;
+    }
+
+    function generateDatasets(type: string, title: string, countType: CountType) {
         let datasets: ChartDataSets = {
             label: title,
-            data: []
-        },
-        data: ChartData = {
-            labels: [],
-            datasets: [datasets]
+            data: [],
+            fill: false
         };
 
         let lastCn = cnData[0]['cn_' + type + 'Num'],
@@ -148,8 +205,6 @@ async function draw() {
                 currHbAdd = currHb - lastHb,
                 date = cnData[i].date,
                 count = 0;
-
-            data.labels?.push(date);
 
             switch (countType) {
                 case CountType.Sub:
@@ -175,18 +230,53 @@ async function draw() {
             lastHb = currHb;
         }
 
+        return datasets;
+    }
+
+    function drawConfirmed() {
+        let data = generateData();
+
+        data.datasets?.push(generateDatasets('con', '全国新增确诊', CountType.CnAdd));
+        data.datasets?.push(generateDatasets('con', '湖北新增确诊', CountType.HbAdd));
+        data.datasets?.push(generateDatasets('con', '除湖北新增确诊', CountType.Sub));
+
         new Chart(createCanvas('#main'), {
-            type: "line",
-            data: data
+            type: 'line',
+            data: data,
+            options: {
+                plugins: {
+                    colorschemes: {
+                        scheme: 'office.Concourse6'
+                    }
+                }
+            }
         });
     }
 
-    drawData('con', '湖北新增确诊病例', CountType.HbAdd);
-    drawData('con', '全国除湖北新增确诊病例', CountType.Sub);
-    drawData('sus', '全国新增疑似病例', CountType.CnAdd);
-    drawData('death', '全国除湖北新增死亡病例', CountType.Sub);
-    drawData('cure', '全国除湖北新增治愈病例', CountType.Sub);
-    drawData('cure', '湖北新增治愈病例', CountType.HbAdd);
+    function drawCure() {
+        let data = generateData();
+
+        data.datasets?.push(generateDatasets('cure', '除湖北新增治愈', CountType.Sub));
+        data.datasets?.push(generateDatasets('cure', '湖北新增治愈', CountType.HbAdd));
+        data.datasets?.push(generateDatasets('death', '除湖北新增死亡', CountType.Sub));
+        data.datasets?.push(generateDatasets('death', '湖北新增死亡', CountType.HbAdd));
+
+        new Chart(createCanvas('#main'), {
+            type: 'line',
+            data: data,
+            options: {
+                plugins: {
+                    colorschemes: {
+                        scheme: 'office.Circuit6'
+                    }
+                }
+            }
+        });
+    }
+
+    drawFixed();
+    drawConfirmed();
+    drawCure();
     drawMap();
 }
 
