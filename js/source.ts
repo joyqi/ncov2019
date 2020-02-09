@@ -31,13 +31,10 @@ async function fetchData(url: string) {
 
 async function fetchFixedData() {
     let resp = await fetchJsonp("https://joyqi.com/proxy.php?url="
-        + encodeURIComponent("https://news.163.com/special/epidemic/")),
-        data = await resp.json(),
-        matches = data.contents.match(/window\.data_by_date\s*=\s*([^;]+);/),
-        result: never[] = [];
+        + encodeURIComponent("https://c.m.163.com/ug/api/wuhan/app/data/list-total")),
+        result = await resp.json();
 
-    eval("result = " + matches[1]);
-    return result;
+    return result.contents.data.chinaDayList;
 }
 
 enum CountType {
@@ -86,13 +83,14 @@ async function draw() {
         };
 
         fixedData.forEach((value: any, i: number) => {
-            let treating = value.confirm - value.heal - value.dead,
-                treatingHb = hbData[i].conNum - hbData[i].cureNum - hbData[i].deathNum;
+            let treating = value.total.confirm - value.total.heal - value.total.dead,
+                treatingHb = hbData[i].conNum - hbData[i].cureNum - hbData[i].deathNum,
+                [year, month, day] = value.date.split('-');
 
-            dataA.labels?.push(value.date);
-            dataB.labels?.push(value.date);
-            datasetsA.data?.push(value.suspect_added);
-            datasetsB.data?.push(value.suspect);
+            dataA.labels?.push(month + '.' + day);
+            dataB.labels?.push(month + '.' + day);
+            datasetsA.data?.push(value.today.suspect);
+            datasetsB.data?.push(value.total.suspect);
             datasetsC.data?.push(treatingHb);
             datasetsD.data?.push(treating - treatingHb);
         });
