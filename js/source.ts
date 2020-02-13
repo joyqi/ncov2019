@@ -84,7 +84,7 @@ async function draw() {
 
         fixedData.forEach((value: any, i: number) => {
             let treating = value.total.confirm - value.total.heal - value.total.dead,
-                treatingHb = hbData[i].conNum - hbData[i].cureNum - hbData[i].deathNum,
+                treatingHb = hbData[i + 1].conNum - hbData[i + 1].cureNum - hbData[i + 1].deathNum,
                 [year, month, day] = value.date.split('-');
 
             dataA.labels?.push(month + '.' + day);
