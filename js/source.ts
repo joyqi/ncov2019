@@ -25,13 +25,13 @@ function createCanvas(sel: string): CanvasRenderingContext2D {
  * @param url 地址
  */
 async function fetchData(url: string) {
-    let resp = await fetchJsonp("https://interface.sina.cn/news/wap/" + url);
+    let resp = await fetchJsonp("https://interface.sina.cn/news/wap/" + url, {timeout: 5000});
     return await resp.json();
 }
 
 async function fetchFixedData() {
     let resp = await fetchJsonp("https://joyqi.com/proxy.php?url="
-        + encodeURIComponent("https://c.m.163.com/ug/api/wuhan/app/data/list-total")),
+        + encodeURIComponent("https://c.m.163.com/ug/api/wuhan/app/data/list-total"), {timeout: 5000}),
         result = await resp.json();
 
     return result.contents.data.chinaDayList;
