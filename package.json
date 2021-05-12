@@ -21,7 +21,7 @@
   "homepage": "https://github.com/joyqi/ncov2019#readme",
   "dependencies": {
     "@types/chart.js": "^2.9.11",
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "chartjs-plugin-colorschemes": "^0.4.0",
     "fetch-jsonp": "^1.1.3",
     "regenerator-runtime": "^0.13.3"
